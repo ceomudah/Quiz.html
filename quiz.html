@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ujian Matematika Kelas X</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    font-family: Arial, sans-serif;
+    background: #eef2ff;
+    margin: 0;
+    color: #1e293b;
+}
+
+.container {
+    max-width: 720px;
+    margin: 30px auto;
+    padding: 15px;
+}
+
+.header {
+    background: #3730a3;
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    margin-top: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px #0001;
+}
+
+input[type=text] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    margin: 8px 0 15px;
+}
+
+button {
+    background: #4338ca;
+    color: white;
+    border: none;
+    padding: 13px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 12px;
+}
+
+button:hover { background: #312e81; }
+
+.info {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: #4338ca;
+    font-weight: bold;
+}
+
+.question {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1.6;
+    margin: 25px 0;
+}
+
+.option {
+    display: block;
+    background: #f1f5f9;
+    padding: 14px;
+    margin: 10px 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.option:hover { background: #e0e7ff; }
+
+.option input { margin-right: 10px; }
+
+.warning {
+    display: none;
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+#quiz, #result { display: none; }
+
+#result { text-align: center; }
+
+.score {
+    font-size: 45px;
+    color: #4338ca;
+    font-weight: bold;
+}
+
+.progress {
+    height: 9px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+#bar {
+    height: 100%;
+    width: 0%;
+    background: #4f46e5;
+}
+
+.footer {
+    text-align: center;
+    font-size: 12px;
+    color: #64748b;
+    margin: 20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+    <h1>📚 KUIS MATEMATIKA</h1>
+    <h2>KELAS X - MATERI EKSPONEN</h2>
+    <p>Kerjakan soal dengan teliti dan jujur!</p>
+</div>
+
+<!-- IDENTITAS -->
+<div class="card" id="identitas">
+    <h3>Identitas Peserta</h3>
+
+    <label>Nama Lengkap</label>
+    <input type="text" id="nama" placeholder="Masukkan nama lengkap">
+
+    <label>Kelas</label>
+    <input type="text" id="kelas" placeholder="Contoh: X-1">
+
+    <p><b>Petunjuk:</b></p>
+    <ul>
+        <li>Jumlah soal sebanyak 5 nomor.</li>
+        <li>Waktu pengerjaan 10 menit.</li>
+        <li>Pilih satu jawaban yang paling tepat.</li>
+        <li>Jangan berpindah tab selama ujian.</li>
+        <li>Bel akan berbunyi jika terdeteksi keluar dari halaman.</li>
+    </ul>
+
+    <button onclick="mulaiKuis()">MULAI KUIS</button>
+</div>
+
+<!-- HALAMAN KUIS -->
+<div class="card" id="quiz">
+
+    <div class="info">
+        <span id="nomor">Soal 1/5</span>
+        <span id="timer">10:00</span>
+    </div>
+
+    <div class="progress">
+        <div id="bar"></div>
+    </div>
+
+    <div class="question" id="question"></div>
+
+    <div id="options"></div>
+
+    <div class="warning" id="warning">
+        ⚠ PERINGATAN! Anda terdeteksi meninggalkan halaman ujian.
+        Jangan berpindah tab atau aplikasi selama ujian berlangsung!
+        <br><br>
+        Jumlah pelanggaran: <span id="count">0</span>
+    </div>
+
+    <button onclick="berikutnya()" id="next">
+        KIRIM JAWABAN
+    </button>
+
+</div>
+
+<!-- HASIL -->
+<div class="card" id="result">
+    <h2>HASIL KUIS</h2>
+    <p id="hasilNama"></p>
+    <p id="hasilKelas"></p>
+
+    <div class="score" id="nilai">0</div>
+
+    <p id="keterangan"></p>
+    <p id="pelanggaran"></p>
+
+    <button onclick="location.reload()">ULANGI KUIS</button>
+</div>
+
+<div class="footer">
+    Media Evaluasi Pembelajaran Matematika Kelas X
+</div>
+
+</div>
+
+<script>
+
+// DATA SOAL
+const soal = [
+{
+    tanya: "Hasil dari 2³ × 2⁴ adalah ...",
+    pilihan: ["2⁷", "2¹²", "2¹", "2⁹"],
+    benar: 0,
+    bahas: "Pangkat dengan basis sama dikalikan dengan menjumlahkan pangkat: 2³⁺⁴ = 2⁷."
+},
+{
+    tanya: "Hasil dari 5⁶ ÷ 5² adalah ...",
+    pilihan: ["5⁸", "5⁴", "5³", "5¹²"],
+    benar: 1,
+    bahas: "Pembagian basis sama dilakukan dengan mengurangkan pangkat: 5⁶⁻² = 5⁴."
+},
+{
+    tanya: "Bentuk sederhana dari (3²)³ adalah ...",
+    pilihan: ["3⁵", "3⁶", "3⁹", "3³"],
+    benar: 1,
+    bahas: "Pangkat dipangkatkan berarti pangkat dikalikan: 3²ˣ³ = 3⁶."
+},
+{
+    tanya: "Nilai dari 2⁻³ adalah ...",
+    pilihan: ["-8", "8", "1/8", "1/6"],
+    benar: 2,
+    bahas: "Pangkat negatif berarti kebalikan: 2⁻³ = 1/2³ = 1/8."
+},
+{
+    tanya: "Jika 3ˣ = 81, maka nilai x adalah ...",
+    pilihan: ["2", "3", "4", "5"],
+    benar: 2,
+    bahas: "Karena 81 = 3⁴, maka x = 4."
+}
+];
+
+let nomor = 0;
+let jawabanBenar = 0;
+let pelanggaran = 0;
+let waktu = 600;
+let selesai = false;
+let sudahMenjawab = false;
+let interval;
+
+// SISTEM SUARA BEL
+let audio;
+
+function bunyiBel() {
+    try {
+        if (!audio) {
+            audio = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        if (audio.state === "suspended") audio.resume();
+
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+
+        oscillator.connect(gain);
+        gain.connect(audio.destination);
+
+        oscillator.frequency.value = 850;
+        oscillator.type = "sine";
+
+        gain.gain.setValueAtTime(0.4, audio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+            0.001, audio.currentTime + 0.7
+        );
+
+        oscillator.start();
+        oscillator.stop(audio.currentTime + 0.7);
+
+    } catch(e) {}
+}
+
+// MULAI KUIS
+function mulaiKuis() {
+
+    const nama = document.getElementById("nama").value.trim();
+    const kelas = document.getElementById("kelas").value.trim();
+
+    if (!nama || !kelas) {
+        alert("Silakan isi nama dan kelas terlebih dahulu!");
+        return;
+    }
+
+    document.getElementById("identitas").style.display = "none";
+    document.getElementById("quiz").style.display = "block";
+
+    tampilSoal();
+    interval = setInterval(hitungWaktu, 1000);
+
+    // Meminta mode layar penuh
+    if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+    }
+}
+
+// MENAMPILKAN SOAL
+function tampilSoal() {
+
+    sudahMenjawab = false;
+
+    let s = soal[nomor];
+
+    document.getElementById("nomor").innerText =
+        `Soal ${nomor + 1} / 5`;
+
+    document.getElementById("bar").style.width =
+        ((nomor + 1) / 5 * 100) + "%";
+
+    document.getElementById("question").innerText =
+        (nomor + 1) + ". " + s.tanya;
+
+    document.getElementById("options").innerHTML =
+        s.pilihan.map((p, i) => `
+        <label class="option">
+            <input type="radio" name="pilihan" value="${i}">
+            ${String.fromCharCode(65+i)}. ${p}
+        </label>
+        `).join("");
+
+    document.getElementById("warning").style.display = "none";
+
+    document.getElementById("next").innerText =
+        "KIRIM JAWABAN";
+}
+
+// PERIKSA JAWABAN
+function berikutnya() {
+
+    if (selesai) return;
+
+    if (!sudahMenjawab) {
+
+        let pilih = document.querySelector(
+            'input[name="pilihan"]:checked'
+        );
+
+        if (!pilih) {
+            alert("Silakan pilih jawaban terlebih dahulu!");
+            return;
+        }
+
+        sudahMenjawab = true;
+
+        let benar = soal[nomor].benar;
+        let nilaiJawaban = Number(pilih.value);
+
+        if (nilaiJawaban === benar) {
+            jawabanBenar++;
+        }
+
+        document.querySelectorAll('input[name="pilihan"]')
+            .forEach(x => x.disabled = true);
+
+        const benarText = soal[nomor].pilihan[benar];
+
+        document.getElementById("question").innerHTML +=
+            `<br><br>Jawaban benar: ${String.fromCharCode(65+benar)}. ${benarText}
+            <br><small>${soal[nomor].bahas}</small>`;
+
+        document.getElementById("next").innerText =
+            nomor === 4 ? "LIHAT HASIL" : "SOAL BERIKUTNYA";
+
+    } else {
+
+        if (nomor < 4) {
+            nomor++;
+            tampilSoal();
+        } else {
+            hasilAkhir();
+        }
+    }
+}
+
+// TIMER
+function hitungWaktu() {
+
+    if (selesai) return;
+
+    waktu--;
+
+    let menit = Math.floor(waktu / 60);
+    let detik = waktu % 60;
+
+    document.getElementById("timer").innerText =
+        String(menit).padStart(2,"0") + ":" +
+        String(detik).padStart(2,"0");
+
+    if (waktu <= 0) {
+        hasilAkhir();
+    }
+}
+
+// DETEKSI PINDAH TAB / KELUAR HALAMAN
+function deteksiKeluar() {
+
+    if (selesai) return;
+
+    pelanggaran++;
+
+    bunyiBel();
+
+    document.getElementById("warning").style.display = "block";
+
+    document.getElementById("count").innerText = pelanggaran;
+}
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        deteksiKeluar();
+    }
+});
+
+window.addEventListener("blur", () => {
+    deteksiKeluar();
+});
+
+// DETEKSI KELUAR DARI LAYAR PENUH
+document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && !selesai &&
+        document.getElementById("quiz").style.display === "block") {
+        deteksiKeluar();
+    }
+});
+
+// HASIL AKHIR
+function hasilAkhir() {
+
+    if (selesai) return;
+
+    selesai = true;
+    clearInterval(interval);
+
+    const nilai = jawabanBenar * 20;
+
+    document.getElementById("quiz").style.display = "none";
+    document.getElementById("result").style.display = "block";
+
+    document.getElementById("hasilNama").innerText =
+        "Nama: " + document.getElementById("nama").value;
+
+    document.getElementById("hasilKelas").innerText =
+        "Kelas: " + document.getElementById("kelas").value;
+
+    document.getElementById("nilai").innerText = nilai;
+
+    document.getElementById("keterangan").innerText =
+        jawabanBenar + " dari 5 soal dijawab benar.";
+
+    document.getElementById("pelanggaran").innerText =
+        "Jumlah peringatan keluar halaman: " + pelanggaran;
+
+    if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+    }
+}
+
+</script>
+
+</body>
+</html>
